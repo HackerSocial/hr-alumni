@@ -2,20 +2,19 @@ var User = require('../users/userModel.js');
 
 
 exports.createProfile = function(req, res) {
-  console.log('request looks liek : ', req)
-  console.log('request.fromgithub : ', req.fromGitHub); 
 
   if(req.fromGitHub) {
     var name = req.body['_json'].name;
+    var githubID = req.body['_json'].id;
     var profilePic= req.body['_json']['avatar_url'];
     var githubName = req.body.username;
     var email = req.body['_json'].email;
     var location = req.body['_json'].location;
-    var summary = ''; 
+    var summary = '';
     var status = req.body['_json'].hireable || '';
     var companies = '';
     var languages ='';
-    var blog = req.body['_json'].blog || ''; 
+    var blog = req.body['_json'].blog || '';
     var website = '';
     var linkedin = '';
     var github = req.body['_json'].html_url;
@@ -41,18 +40,23 @@ exports.createProfile = function(req, res) {
   //   var project2  = req.body.project2;
   //   var project3  = req.body.project3;
   // }
-  
-  console.log('github name', githubName); 
+
+  console.log('github name', githubName);
   var query= User.findOne({
       'contact.githubName':  githubName
-      
-    }); 
+
+    });
 
   query.exec(function(err, user) {
-      console.log('user: ', user); 
-      console.log('err', err); 
+      console.log('user: ', user);
+      console.log('err', err);
+          console.log("more user info", name);
+          console.log("more user info", profilePic);
+          console.log("more user info", email);
       if (!user) {
         var newUser = new User({
+
+          githubID: githubID,
           contact: {
             name: name,
             profilePic: profilePic,
@@ -61,15 +65,13 @@ exports.createProfile = function(req, res) {
             location: location
           },
           about: {
+            invest: false,
             summary: summary,
             status: status
           },
           experience: {
-            companies:
-              companies
-            ,
-            languages: 
-              languages
+            companies: companies,
+            languages: languages
           },
           links: {
             blog: blog,
@@ -81,24 +83,24 @@ exports.createProfile = function(req, res) {
             project1: project1,
             project2: project2,
             project3: project3
-          
+
           }
         });
-        console.log('new user on line 64: ', newUser); 
+        console.log('new user on line 64: ', newUser);
         newUser.save(function(err, newUser) {
           if (err) {
-            console.log('there was an error with saving'); 
-            res.status(500).send(err); 
+            console.log('there was an error with saving');
+            res.status(500).send(err);
           }
           console.log('new user gets saved: ', newUser);
           console.log('new user github name:', newUser.contact.githubName)
-          // res.json(newUser); 
+          // res.json(newUser);
           res.redirect('/#/updateProfile/'+ newUser.contact.githubName)
-          
+
         });
       } else {
         console.log("Profile already exists");
-        console.log('user exists: ', user.contact.githubName); 
+        console.log('user exists: ', user.contact.githubName);
         // res.redirect('/#/profiles');
         res.redirect('/#/updateProfile/'+ user.contact.githubName)
       }
@@ -108,13 +110,13 @@ exports.createProfile = function(req, res) {
 
 exports.findAll = function(req, res) {
   User.find({}).exec(function(err, profiles) {
-    console.log('profiles in find all', profiles); 
+    //console.log('profiles in find all', profiles);
     res.json(profiles);
   });
 };
 
 exports.findOne = function(req, res) {
-  console.log('gets to servers findOne: ', req.params.githubName); 
+  console.log('gets to servers findOne: ', req.params.githubName);
   User.find({'contact.githubName':  req.params.githubName
   }).exec(function(err, profile) {
     res.json(profile);
@@ -122,11 +124,13 @@ exports.findOne = function(req, res) {
 };
 
 exports.updateProfile= function (req, res) {
-   console.log('req.body', req.body); 
+   console.log('req.body', req.body);
     var name = req.body[0].contact.name;
     var profilePic = req.body[0].contact.profilePic;
     var githubName = req.body[0].contact.githubName;
     var email = req.body[0].contact.email;
+    var job = req.body[0].about.job;
+    var invest = req.body[0].about.invest;
     var location = req.body[0].contact.location;
     var summary = req.body[0].about.summary;
     var status = req.body[0].about.status;
@@ -136,9 +140,9 @@ exports.updateProfile= function (req, res) {
     var website = req.body[0].links.website;
     var linkedin = req.body[0].links.linkedin;
     var github = req.body[0].links.github;
-    var project1  = req.body[0].project1;
-    var project2  = req.body[0].project2;
-    var project3  = req.body[0].project3;
+    var project1  = req.body[0].projects.project1;
+    var project2  = req.body[0].projects.project2;
+    var project3  = req.body[0].projects.project3;
 
 
   User.findOneAndUpdate( {'contact.githubName': githubName },
@@ -151,15 +155,14 @@ exports.updateProfile= function (req, res) {
           location: location
           },
           about: {
+            job:job,
+            invest:invest,
             summary: summary,
             status: status
           },
           experience: {
-            companies:
-              companies
-            ,
-            languages: 
-              languages
+            companies: companies,
+            languages: languages
           },
           links: {
             blog: blog,
@@ -171,10 +174,21 @@ exports.updateProfile= function (req, res) {
             project1: project1,
             project2: project2,
             project3: project3
-          
+
           }
-        }, {new:false}, 
+        }, {new:false},
         function (err, person) {
           if(err) {console.log(err) }
         })
 }
+
+exports.getCurrentUser = function(req,res){
+  User.find({githubID: req.user}).exec(function(err, profile) {
+    if(!err) {
+      res.json(profile); 
+    }
+    else {
+      res.send(err);
+    }
+  });
+};

@@ -1,6 +1,7 @@
 var mongoose = require('mongoose');
 
 var UserSchema = new mongoose.Schema({
+  githubID: {type: String},
   contact: {
     name: {type: String},
     profilePic:  {type: String},
@@ -10,6 +11,8 @@ var UserSchema = new mongoose.Schema({
   },
 
   about: {
+    job: { type: Boolean, required: true, default: false },
+    invest: {type: Boolean, required: true, default: false},
     summary: {type: String},
     status: {type: String}
   },

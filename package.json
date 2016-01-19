@@ -1,10 +1,11 @@
 {
   "name": "hr-alumni",
   "version": "1.0.0",
-  "description": "Team Lambos Greenfield Project",
+  "description": "Team Jaguar Greenfield Project",
   "main": "server/server.js",
   "scripts": {
-    "start": "node server/server.js"
+    "start": "node server/server.js",
+    "postinstall": "bower install"
   },
   "repository": {
     "type": "git",
@@ -18,13 +19,15 @@
   "homepage": "https://github.com/HackerSocial/hr-alumni#readme",
   "dependencies": {
     "body-parser": "^1.14.2",
+    "bower": "^1.7.2",
     "express": "^4.13.3",
     "express-session": "^1.12.1",
     "materialize-css": "^0.97.5",
     "mongoose": "^4.0.0",
     "mongoose-type-url": "^1.0.1",
     "passport": "^0.3.2",
-    "passport-github2": "^0.1.9"
+    "passport-github2": "^0.1.9",
+    "request": "^2.67.0"
   },
   "engines": {
     "node": "5.2.0",

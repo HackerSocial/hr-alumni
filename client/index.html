@@ -1,25 +1,20 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet" integrity="sha256-7s5uDGW3AHqw6xtJmNNtr+OBRJUlgkNJEo78P4b0yRw= sha512-nNo+yCHEyn0smMxSswnf/OnX6/KwJuZTlNZBjauKhTK0c+zT+q5JOCx0UFhXQ6rJR9jg6Es8gPuD2uZcYDLqSw==" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-social/4.12.0/bootstrap-social.min.css">
+    
+
+    <!-- <link rel="stylesheet" href="lib/bootstrap/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="lib/font-awesome/css/font-awesome.min.css"> -->
+    <!-- <link rel="stylesheet" href="./lib/angular&#45;materialize/css/style.css"> -->
+    <!-- <link rel="stylesheet" href="lib/bootstrap-social/bootstrap-social.css"> -->
 
 <!-- CSS -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <link href="http://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=10"/>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link type="text/css" rel="stylesheet" href="css/materialize.min.css"  media="screen,projection"/>
     <link href="css/style.css" type="text/css" rel="stylesheet" media="screen,projection"/>
 
-    
 
-   <!--  // <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha256-KXn5puMvxCw+dAYznun+drMdG1IFl3agK0p/pqT9KAo= sha512-2e8qq0ETcfWRI4HJBzQiA3UoyFk6tbNyG+qSaIBZLyW9Xf3sWZHN/lxe9fTh1U45DpPf07yj94KsUHHWe4Yk1A==" crossorigin="anonymous"></script> -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.8/angular.min.js"></script>
-    <script src= "https://cdnjs.cloudflare.com/ajax/libs/angular-ui-router/0.2.15/angular-ui-router.min.js"></script>
- <!--    // <script type="text/javascript" src="js/materialize.min.js"></script> -->
-
-
-    <script src="app/app.js"></script>
   </head>
 
   <body ng-app="myApp">
@@ -28,31 +23,45 @@
       <a id="logo-container" href="#" class="brand-logo" ui-sref="home">HR Alumni</a>
       <ul class="right hide-on-med-and-down">
         <!-- <li><a ui-sref="createProfile">CreateProfile</a></li> -->
-        <li><a ui-sref="profiles">Profiles</a></li>
+
+        <li><a ui-sref="about">About</a></li>
+        <li ng-show="isLoggedIn()"><a ui-sref="messageBoard">Message Board</a></li>
+        <li ng-show="isLoggedIn()"><a ui-sref="Hire">Hire</a></li>
+        <li ng-show="isLoggedIn()"><a ui-sref="profiles">My Profile</a></li>
+        <li ng-show="isLoggedIn()"><a ui-sref="tracker">Tracker</a></li>
         <!-- <li><a ui-sref="profile">Individual Profile</a></li> -->
-        <li><a ui-sref="login">Login</a></li>
-        <li><a ui-sref="logout">Logout</a></li>
+        <li ng-show="!isLoggedIn()"><a ui-sref="login">Login</a></li>
+        <li ng-show="isLoggedIn()"><a ui-sref="logout">Logout</a></li>
       </ul>
       <ul id="slide-out" class="side-nav">
-        <!-- <li><a ui-sref="createProfile">CreateProfile</a></li> -->
-        <li><a ui-sref="profiles">Profiles</a></li>
+        <li><a ui-sref="about">About</a></li>
+        <li ng-show="isLoggedIn()"><a ui-sref="messageBoard">Message Board</a></li>
+        <li ng-show="isLoggedIn()"><a ui-sref="Hire">Hire</a></li>
+        <li ng-show="isLoggedIn()"><a ui-sref="profiles">My Profile</a></li>
+        <li ng-show="isLoggedIn()"><a ui-sref="tracker">Tracker</a></li>
         <!-- <li><a ui-sref="profile">Individual Profile</a></li> -->
-        <li><a ui-sref="login">Login</a></li>
-        <li><a ui-sref="logout">Logout</a></li>
+        <li ng-show="!isLoggedIn()"><a ui-sref="login">Login</a></li>
+        <li ng-show="isLoggedIn()"><a ui-sref="logout">Logout</a></li>
       </ul>
       <a href="#" data-activates="slide-out" class="button-collapse"><i class="mdi-navigation-menu"></i></a>
     </div>
-     </div>
     </nav>
+      
+    <div ui-view></div>
 
-
-    <div class="container">
-      <div ui-view></div>
-    </div>
-
-    <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+    <script src="lib/jquery/dist/jquery.min.js"></script>
     <script src="js/materialize.min.js"></script>
+    <script src="lib/angular/angular.min.js"></script>
+    <script src="lib/angular-ui-router/release/angular-ui-router.min.js"></script>
+    <script src="lib/moment/min/moment.min.js"></script>
+    <script src="lib/angular-moment/angular-moment.min.js"></script>
     <script src="js/init.js"></script>
-
+    <script src="app/tracker/tracker.js"></script>
+    <script src="app/tracker/trackerFactory.js"></script>
+    <script src="app/messageBoard/messageBoardServices.js"></script>
+    <script src="app/messageBoard/messageBoard.js"></script>
+    <script src="app/messageBoard/post.js"></script>
+    <script src="app/app.js"></script>
+    <!-- <script src="./lib/angular&#45;materialize/src/angular&#45;materialize.js"></script> -->
   </body>
 </html>

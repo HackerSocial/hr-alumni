@@ -1,45 +1,136 @@
-angular.module('myApp', ['ui.router'])
+angular.module('myApp', [
+  'ui.router',
+  'myApp.MessageBoardService',
+  'myApp.messageBoard',
+  'myApp.post',
+  'myApp.tracker',
+  'myApp.TrackerFactory',
+  'angularMoment'
+])
 
 .config(['$stateProvider', '$urlRouterProvider', function ($stateProvider, $urlRouterProvider) {
   $urlRouterProvider.otherwise('/home');
   $stateProvider
     .state('home', {
       url:'/home',
-      templateUrl: 'app/views/home.html'
+      templateUrl: 'app/views/home.html',
+      data: {
+        requiresLogin: false
+      }
     })
     .state('profiles', {
       url: '/profiles',
-      templateUrl: 'app/views/profiles.html'
+      templateUrl: 'app/views/profiles.html',
+      data: {
+        requiresLogin: true
+      }
 
     })
+    .state('Hire', {
+      url: '/Hire',
+      templateUrl: 'app/views/Hire.html',
+      data: {
+        requiresLogin: true
+      }
+    })
+    .state('about', {
+      url: '/about',
+      templateUrl: 'app/views/about.html',
+      data: {
+        requiresLogin: false
+      }
+    })
     // .state('createProfile', {
-    //   url: '/createProfile', 
+    //   url: '/createProfile',
     //   templateUrl: 'app/views/createProfile.html'
     // })
     .state('login', {
       url: '/login',
-      templateUrl: 'app/views/login.html'
+      templateUrl: 'app/views/login.html',
+      data: {
+        requiresLogin: false
+      }
     })
-    .state('profiles.profile', {
-      url: '',
-      templateUrl: 'app/views/profile.html'
+    .state('logout', {
+      url: '/logout',
+      templateUrl: 'app/views/login.html',
+      data: {
+        requiresLogin: false
+      },
+      controller: function($rootScope, $http, $state) {
+        $rootScope.isLoggedIn = function() { return false; };
+        $http.get('/auth/logout').then(function(){
+          $state.go('home');
+        });
+        
+      }
+    })
+    .state('profile', {
+      url: '/profile/{githubName}',
+      templateUrl: 'app/views/profile.html',
+      data: {
+        requiresLogin: true
+      }
     })
     .state('updateProfile', {
       url: '/updateProfile/:githubName',
-      templateUrl: 'app/views/updateProfile.html'
+      templateUrl: 'app/views/updateProfile.html',
+      data: {
+        requiresLogin: true
+      }
     })
+    .state('messageBoard', {
+      url: '/messages',
+      templateUrl: 'app/messageBoard/messages.html',
+      data: {
+        requiresLogin: true
+      }
+    })
+    .state('post', {
+      url: '/post/{id}',
+      templateUrl: 'app/messageBoard/post.html',
+      data: {
+        requiresLogin: true
+      }
+    })
+    .state('membership', {
+      url: '/membership',
+      templateUrl: 'app/views/membership.html',
+      data: {
+        requiresLogin: false
+      }
+    });
 }])
+
+.run(function($rootScope, $state, Auth){
+    $rootScope.$on('$stateChangeStart', function(e, to) {
+      if (to.data && to.data.requiresLogin) {
+        
+        Auth.getUser().then(function(data){
+          if(data.data.length === 0) {
+            $rootScope.isLoggedIn = function(){return false;};
+            //e.preventDefault();
+            $state.go('login');
+          }
+          $rootScope.isLoggedIn = function(){return true;};
+        });
+      }
+    });
+})
 
 .controller('homeCtrl', ['$scope','$state', function ($scope, $state) {
 
-  $state.transitionTo('profiles.profile'); 
+  $state.transitionTo('profiles');
 
 }])
 
-.controller('profileCtrl', ['$scope', 'Profile', function ($scope, Profile) {
-  console.log('controller gets called'); 
-  // $scope.currentProfile= Profile.getProfile(); 
-  console.log('currentProfile where it counts', $scope.currentProfile); 
+.controller('profileCtrl', ['$scope', 'HttpRequest', '$stateParams', function ($scope, HttpRequest,$stateParams) {
+  //console.log('controller gets called');
+  HttpRequest.getProfile($stateParams.githubName)
+    .success(function(data) {
+      //console.log('Profile = ', data);
+      $scope.currentProfile = data[0];
+    });
 }])
 
 .controller('profilesCtrl', ['$scope', '$http', 'HttpRequest', 'Profile', function ($scope, $http, HttpRequest, Profile) {
@@ -48,9 +139,9 @@ angular.module('myApp', ['ui.router'])
     .then(function (res) {
       $scope.profiles= res.data;
       $scope.setProfile= function (profile) {
-        console.log('set profile called'); 
-        $scope.currentProfile= Profile.setProfile(profile); 
-        console.log('currentProfile', $scope.currentProfile); 
+        console.log('set profile called');
+        $scope.currentProfile= Profile.setProfile(profile);
+        console.log('currentProfile', $scope.currentProfile);
       }
     });
 
@@ -59,6 +150,8 @@ angular.module('myApp', ['ui.router'])
         console.log(profile);
         $scope.profile = profile;
         $('#modalDetails').openModal();
+
+
     };
 
 }])
@@ -71,8 +164,9 @@ angular.module('myApp', ['ui.router'])
 //   }
 // }])
 
-.controller('updateProfileCtrl', ['$scope', '$stateParams','HttpRequest', function ($scope, $stateParams, HttpRequest){
-  console.log('$stateParams are: ', $stateParams); 
+.controller('updateProfileCtrl', ['$scope', '$stateParams','HttpRequest', '$rootScope', function ($scope, $stateParams, HttpRequest, $rootScope){
+  console.log('$stateParams are: ', $stateParams);
+  $rootScope.isLoggeIn = function(){return true;};
   // redirects to /updateProfile/:githubName
   // $scope.submitProfile = function (isValid, formData) {
   //       console.log('formData', formData);
@@ -91,15 +185,15 @@ angular.module('myApp', ['ui.router'])
   HttpRequest.getProfile($stateParams.githubName)
     .then(function (res) {
       $scope.data= res.data;
-      console.log('profile data: ', res.data[0]);  
-      console.log('contact data: ', res.data[0].contact); 
+      console.log('profile data: ', res.data[0]);
+      console.log('contact data: ', res.data[0].contact);
       // $scope.setProfile= function (profile) {
-      //   console.log('set profile called'); 
-      //   $scope.currentProfile= Profile.setProfile(profile); 
-      //   console.log('currentProfile', $scope.currentProfile); 
+      //   console.log('set profile called');
+      //   $scope.currentProfile= Profile.setProfile(profile);
+      //   console.log('currentProfile', $scope.currentProfile);
       // }
-      
-      
+
+
     })
 
 }])
@@ -109,10 +203,10 @@ angular.module('myApp', ['ui.router'])
     HttpRequest.login()
       .then(
         function (res) {
-          console.log('res to login', res); 
+          console.log('res to login', res);
         },
         function (err) {
-          console.log('there was an error'); 
+          console.log('there was an error');
         }
       )
   }
@@ -139,7 +233,7 @@ angular.module('myApp', ['ui.router'])
       method: 'GET',
       url: '/api/profiles'
     }).success(function(result){
-      deferred.resolve(result); 
+      deferred.resolve(result);
     }).error(function (result){
       deferred.reject(result);
     })
@@ -150,9 +244,13 @@ angular.module('myApp', ['ui.router'])
       method: 'GET',
       url: '/api/profile/'+githubName
     }).success(function(result){
-      deferred.resolve(result);
-    }).error(function (result){
-      deferred.reject(result);
+      // console.log('Get profile res: ', result);
+      // deferred.resolve(result);
+      return result;
+    }).error(function (err){
+      // console.log('Get profile err: ', result);
+      // deferred.reject(result);
+      return err;
     })
   }
 
@@ -164,19 +262,41 @@ angular.module('myApp', ['ui.router'])
 }])
 
 .factory('Profile', function (){
-  var storedProfile; 
+  var storedProfile;
   var setProfile= function (profile) {
-    console.log('profile set'); 
+    console.log('profile set');
     storedProfile= profile;
-    return storedProfile;  
+    return storedProfile;
   }
   var getProfile= function (){
-    console.log('get profile'); 
-    return storedProfile; 
+    console.log('get profile');
+    return storedProfile;
   }
   return {
     setProfile: setProfile,
     getProfile: getProfile
   }
-
 })
+
+.factory('Auth', ['$http', function($http) {
+  var getUser = function() {
+    return $http.get('/auth/currentuser').
+      then(function (data) {
+          if(data.length === 0) {
+            //console.log('not logged in');
+            return [];
+          }
+          else {
+            //console.log('logged in: ', data);
+            return data;
+          }
+      }).
+      then(null, function () {
+          console.log('Login failed');
+      });
+  };
+  return {
+    getUser: getUser,
+    //isLoggedIn: isLoggedIn
+  };
+}]);
